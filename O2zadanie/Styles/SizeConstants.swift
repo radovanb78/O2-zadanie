@@ -21,6 +21,15 @@ enum Dimension {
                 case .l: 12
             }
         }
+
+        var listSpacing: CGFloat {
+            switch self {
+                case .xs: 2
+                case .s: 4
+                case .m: 6
+                case .l: 8
+            }
+        }
     }
 
     enum Input {

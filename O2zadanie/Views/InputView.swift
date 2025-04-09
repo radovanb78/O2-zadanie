@@ -7,15 +7,43 @@
 
 import SwiftUI
 
-struct InputView<Content: View>: View {
+struct DefaultInputViewContent: View {
+    @Binding var text: String
+
+    var body: some View {
+        TextField("", text: $text)
+            .bodyStyle(.m)
+            .foregroundStyle(Color("content/xx-high"))
+    }
+}
+
+struct DefaultInputViewErrorContent: View {
+    let errorMessage: String
+
+    var body: some View {
+        Text(errorMessage)
+            .labelStyle(.s)
+            .foregroundStyle(Color("content/danger"))
+            .accessibilityLabel("Chybová správa: \(errorMessage)")
+    }
+}
+
+/// View for common text entry
+/// - Parameter text: Binding - the entered text
+/// - Parameter title: title
+/// - Parameter errorMessage: error message
+/// - Parameter placeholder: placeholder
+/// - Parameter size: size
+/// - Parameter content: optional - input view overriding
+/// - Parameter errorContent: optional - error view overriding
+struct InputView<Content: View, ErrorContent: View>: View {
     @Binding var text: String
     let title: String?
     let errorMessage: String?
     let placeholder: String?
     let size: Dimension.Size
-    let content: () -> Content
-
-    let placeholderColor: Color = Color("content/low")
+    let content: (Binding<String>) -> Content
+    let errorContent: (String) -> ErrorContent
 
     private var isError: Bool {
         errorMessage != nil
@@ -27,34 +55,21 @@ struct InputView<Content: View>: View {
         placeholder: String? = nil,
         size: Dimension.Size,
         text: Binding<String>,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping (Binding<String>) -> Content = { text in
+            DefaultInputViewContent(text: text)
+        },
+        @ViewBuilder errorContent: @escaping (String) -> ErrorContent = { message in
+            DefaultInputViewErrorContent(errorMessage: message)
+        }
     ) {
         self.title = title
         self.errorMessage = errorMessage
         self.placeholder = placeholder
+        self.size = size
         self._text = text
         self.content = content
-        self.size = size
+        self.errorContent = errorContent
     }
-
-    init(
-        title: String? = nil,
-        errorMessage: String? = nil,
-        placeholder: String? = nil,
-        placeholderFont: Font = .body,
-        size: Dimension.Size,
-        text: Binding<String>
-    ) where Content == TextField<Text> {
-            self.init(
-                title: title,
-                errorMessage: errorMessage,
-                placeholder: placeholder,
-                size: size,
-                text: text
-            ) {
-                TextField("", text: text)
-            }
-        }
 
     var body: some View {
         VStack(alignment: .leading, spacing: size.spacing) {
@@ -69,13 +84,13 @@ struct InputView<Content: View>: View {
                     VStack {
                         Text(placeholder + "…")
                             .bodyStyle(.m)
-                            .foregroundStyle(placeholderColor)
+                            .foregroundStyle(Color("content/low"))
                             .offset(CGSize(width: size.spacing, height: size.spacing))
                         Spacer()
                     }
                 }
 
-                content()
+                content($text)
                     .padding(size.spacing)
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -84,13 +99,11 @@ struct InputView<Content: View>: View {
                     .stroke(isError ? Color("surface/danger") : Color("surface/x-high"), lineWidth: 1)
             )
             if let errorMessage {
-                Text(errorMessage)
-                    .labelStyle(.s)
-                    .foregroundStyle(Color("content/danger"))
-                    .accessibilityLabel("Chybová správa: \(errorMessage)")
+                errorContent(errorMessage)
             }
         }
-        .padding(size.spacing)
+        .padding(.horizontal, size.spacing)
+        .padding(.bottom, size.spacing)
         .background(Color("surface/x-low"))
     }
 }

@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var name: String = ""
+    @State var email: String = ""
     @State var password: String = ""
     @State var isPasswordValid: Bool = true
 
     let size: Dimension.Size = .m
 
     var body: some View {
-        VStack {
+        VStack(spacing: size.listSpacing) {
             InputView(
                 title: "Email",
                 placeholder: "Emailová adresa",
                 size: size,
-                text: $name
+                text: $email
             )
             .textContentType(.emailAddress)
             .keyboardType(.emailAddress)

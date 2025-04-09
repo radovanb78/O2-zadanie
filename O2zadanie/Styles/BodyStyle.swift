@@ -42,8 +42,6 @@ enum BodyStyle: TextStyle {
     }
 }
 
-
-
 extension View {
     func bodyStyle(_ style: BodyStyle) -> some View {
         self.modifier(TextModifier(style: style))

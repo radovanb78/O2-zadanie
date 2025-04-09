@@ -42,7 +42,7 @@ struct DefaultValidationView: ValidationViewProtocol {
 /// View for password entry, with the option to specify validation rules
 /// - Parameter password: Binding - the entered password
 /// - Parameter validations: optional - array of validation rules of type Validation
-/// - Parameter errorMessage: Error message
+/// - Parameter errorMessage: error message
 /// - Parameter validationView: optional - view for displaying the validation rule, must conform to the ValidationViewProtocol
 /// - Parameter changeHandler: function - called when the password changes, returns the validity of the password
 /// - Parameter title: title
@@ -94,45 +94,44 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
             errorMessage: errorMessage,
             placeholder: placeholder,
             size: size,
-            text: $password
-        ) {
-            VStack {
-                HStack {
-                    Group {
-                        if isSecure {
-                            SecureField("", text: $password)
-                        } else {
-                            TextField("", text: $password)
-                                .autocapitalization(.none)
-
+            text: $password,
+            content: { _ in
+                VStack {
+                    HStack {
+                        Group {
+                            if isSecure {
+                                SecureField("", text: $password)
+                            } else {
+                                TextField("", text: $password)
+                                    .autocapitalization(.none)
+                            }
                         }
-                    }
-                    .textContentType(.password)
-                    .bodyStyle(.m)
-                    .foregroundStyle(Color("content/xx-high"))
-                    .accessibilityLabel(placeholder)
+                        .textContentType(.password)
+                        .bodyStyle(.m)
+                        .foregroundStyle(Color("content/xx-high"))
+                        .accessibilityLabel(placeholder)
 
-                    Button(action: {
-                        isSecure.toggle()
-                    }) {
-                        Image(systemName: isSecure ? "eye" : "eye.slash")
-                            .bodyStyle(.m)
-                            .foregroundStyle(Color("content/xx-high"))
-                    }
-                    .padding(.trailing, size.spacing)
-                    .accessibilityLabel("Zmena viditeľnosti hesla. Heslo je \(isSecure ? "skryté" : "viditeľné")")
-                    .accessibilityAddTraits(.isButton)
-                }
-                if showValidationHints {
-                    VStack(spacing: 4) {
-                        ForEach($validations) { $validation in
-                            validationView(validation, errorMessage != nil)
+                        Button(action: {
+                            isSecure.toggle()
+                        }) {
+                            Image(systemName: isSecure ? "eye" : "eye.slash")
+                                .bodyStyle(.m)
+                                .foregroundStyle(Color("content/xx-high"))
                         }
+                        .padding(.trailing, size.spacing)
+                        .accessibilityLabel("Zmena viditeľnosti hesla. Heslo je \(isSecure ? "skryté" : "viditeľné")")
+                        .accessibilityAddTraits(.isButton)
                     }
-                    .padding(.top, size.spacing)
+                    if showValidationHints {
+                        VStack(spacing: 4) {
+                            ForEach($validations) { $validation in
+                                validationView(validation, errorMessage != nil)
+                            }
+                        }
+                        .padding(.top, size.spacing)
+                    }
                 }
-            }
-        }
+            })
         .onChange(of: password) { _ in
             validatePassword(onChange: true)
         }
