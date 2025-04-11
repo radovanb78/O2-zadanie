@@ -7,41 +7,9 @@
 
 import SwiftUI
 
-protocol ValidationViewProtocol: View {
-    var validation: Validation { get }
-    var isError: Bool { get }
-}
-
-/// Struct describing the validation
-/// - Parameter isValid: validation state
-/// - Parameter regex: validation regex
-/// - Parameter description: validation hint
-struct Validation: Identifiable {
-    let id: UUID = UUID()
-    var isValid: Bool = false
-    let regex: String
-    let description: String
-}
-
-struct DefaultValidationView: ValidationViewProtocol {
-    let validation: Validation
-    let isError: Bool
-
-    var body: some View {
-        HStack {
-            Image(systemName: validation.isValid ? "checkmark" : "xmark")
-            Text(validation.description)
-        }
-        .labelStyle(.s)
-        .foregroundStyle(validation.isValid ? Color("content/xx-high") : isError ? Color("content/danger") : Color("content/medium"))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel("Vlastnosť hesla \(validation.description) je \(validation.isValid ? "splnená" : "nesplnená")")
-    }
-}
-
 /// View for password entry, with the option to specify validation rules
 /// - Parameter password: Binding - the entered password
-/// - Parameter validations: optional - array of validation rules of type Validation
+/// - Parameter validations: optional - array of validation rules
 /// - Parameter errorMessage: error message
 /// - Parameter validationView: optional - view for displaying the validation rule, must conform to the ValidationViewProtocol
 /// - Parameter changeHandler: function - called when the password changes, returns the validity of the password
@@ -49,19 +17,18 @@ struct DefaultValidationView: ValidationViewProtocol {
 /// - Parameter placeholder: placeholder
 /// - Parameter showValidationHints: determines whether the descriptions of individual validations are displayed
 /// - Parameter size: size
-
 struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
-    @Binding var password: String
+    @StateObject private var passwordValidator: PasswordValidator
+    @FocusState private var isFocused: Bool
     @State private var isSecure = true
-    @State var validations: [Validation]
-    let errorMessage: String?
+
+    @Binding var password: String
+
     let validationView: (Validation, Bool) -> ValidationView
-    let changeHandler: ((_ result: Bool) -> Void)?
     let title: String
     let placeholder: String
     let showValidationHints: Bool
     let size: Dimension.Size
-    @FocusState private var isFocused: Bool
 
     init (
         title: String = "Heslo",
@@ -71,19 +38,22 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
             DefaultValidationView(validation: validation, isError: isError)
         },
         errorMessage: String? = nil,
-        validations: [Validation] = [],
+        validations: [ValidationRule] = [],
         showValidationHints: Bool = true,
         size: Dimension.Size,
         changeHandler: ((_ result: Bool) -> Void)? = nil
-
     ) {
         self.title = title
         self.placeholder = placeholder
         self._password = password
         self.validationView = validationView
-        self.changeHandler = changeHandler
-        self.validations = validations
-        self.errorMessage = errorMessage
+        self._passwordValidator = StateObject(
+            wrappedValue: PasswordValidator(
+                rules: validations,
+                onIsValidChanged: changeHandler,
+                errorMessage: errorMessage
+            )
+        )
         self.showValidationHints = showValidationHints
         self.size = size
     }
@@ -91,7 +61,7 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
     public var body: some View {
         InputView(
             title: title,
-            errorMessage: errorMessage,
+            errorMessage: passwordValidator.errorMessage,
             placeholder: placeholder,
             size: size,
             text: $password,
@@ -104,12 +74,14 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
                             } else {
                                 TextField("", text: $password)
                                     .autocapitalization(.none)
+                                    .autocorrectionDisabled(true)
                             }
                         }
                         .textContentType(.password)
                         .bodyStyle(.m)
                         .foregroundStyle(Color("content/xx-high"))
                         .accessibilityLabel(placeholder)
+                        .frame(height: BodyStyle.m.lineHeight)
 
                         Button(action: {
                             isSecure.toggle()
@@ -118,45 +90,34 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
                                 .bodyStyle(.m)
                                 .foregroundStyle(Color("content/xx-high"))
                         }
-                        .padding(.trailing, size.spacing)
+                        .padding(.leading, size.spacing)
                         .accessibilityLabel("Zmena viditeľnosti hesla. Heslo je \(isSecure ? "skryté" : "viditeľné")")
                         .accessibilityAddTraits(.isButton)
                     }
                     if showValidationHints {
                         VStack(spacing: 4) {
-                            ForEach($validations) { $validation in
-                                validationView(validation, errorMessage != nil)
+                            ForEach(passwordValidator.validations) { validation in
+                                validationView(validation, passwordValidator.isError )
                             }
                         }
                         .padding(.top, size.spacing)
                     }
                 }
             })
-        .onChange(of: password) { _ in
-            validatePassword(onChange: true)
+        .onChange(of: password) { password in
+            passwordValidator.validatePassword(password, onChange: true)
         }
         .onSubmit {
-            validatePassword(onChange: false)
+            passwordValidator.validatePassword(password, onChange: false)
         }
         .focused($isFocused)
-        .onChange(of: isFocused) { _ in
-            validatePassword(onChange: isFocused)
+        .onChange(of: isFocused) { isFocused in
+            passwordValidator.validatePassword(password, onChange: isFocused)
         }
-    }
-
-    private func validatePassword(onChange: Bool) {
-        var isPasswordValid = true
-        var validations = self.validations
-        validations.enumerated().forEach { index, validation in
-            let partialValidation = NSPredicate(format: "SELF MATCHES %@", validation.regex).evaluate(with: password)
-            validations[index].isValid = partialValidation
-            isPasswordValid = isPasswordValid && partialValidation
-        }
-        self.validations = validations
-        changeHandler?(onChange ? true : isPasswordValid)
     }
 }
 
 #Preview {
     PasswordInput(password: .constant(""), size: .m)
 }
+

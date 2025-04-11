@@ -27,12 +27,12 @@ struct ContentView: View {
 
             PasswordInput(
                 password: $password,
-                errorMessage: isPasswordValid ? nil : "Heslo nespĺňa bezpečnostné požiadavky!",
+                errorMessage: "Heslo nespĺňa bezpečnostné požiadavky!",
                 validations: [
-                    Validation(regex: ".{8,}", description: "Minimálne 8 znakov"),
-                    Validation(regex: ".*[A-Z].*", description: "Aspoň jedno veľké písmeno"),
-                    Validation(regex: ".*[0-9].*", description: "Aspoň jedna číslica"),
-                    Validation(regex: ".*[?=#/%].*", description: "Aspoň jeden špeciálny znak (? = # / %)")
+                    .minLength(8, "Minimálne 8 znakov"),
+                    .atLeastXCapitalLetters(1, "Aspoň jedno veľké písmeno"),
+                    .atLeastXDigits(1, "Aspoň jedna číslica"),
+                    .atLeastXSpecial(1, characters: ["?", "=", "#", "/", "%"], "Aspoň jeden špeciálny znak (? = # / %]")
                 ],
                 size: size
             ) { isValid in
