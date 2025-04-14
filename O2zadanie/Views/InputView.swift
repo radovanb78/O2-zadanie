@@ -24,90 +24,129 @@ struct DefaultInputViewErrorContent: View {
         Text(errorMessage)
             .labelStyle(.s)
             .foregroundStyle(Color("content/danger"))
-            .accessibilityLabel("Chybová správa: \(errorMessage)")
+            .accessibilityLabel("accessibilityErrorMessage".localized(errorMessage.localized))
     }
 }
 
 /// View for common text entry
 /// - Parameter text: Binding - the entered text
-/// - Parameter title: title
-/// - Parameter errorMessage: error message
-/// - Parameter placeholder: placeholder
-/// - Parameter size: size
-/// - Parameter content: optional - input view overriding
+/// - Parameter title: title string
+/// - Parameter placeholder: placeholder string
+/// - Parameter isOptional: boolean value - specifies that the input field is optional
+/// - Parameter infoMessage: info message string
+/// - Parameter errorMessage: error message string
 /// - Parameter errorContent: optional - error view overriding
-struct InputView<Content: View, ErrorContent: View>: View {
+struct InputView<RightButtonContent: View, ErrorContent: View>: View {
+    @FocusState private var isFocused: Bool
+
     @Binding var text: String
-    let title: String?
-    let errorMessage: String?
+    @Binding var errorMessage: String?
+
+    let title: String
     let placeholder: String?
-    let size: Dimension.Size
-    let content: (Binding<String>) -> Content
+    let isOptional: Bool
+    let isSecure: Bool
+    let infoMessage: String?
     let errorContent: (String) -> ErrorContent
+    let rightButtonContent: () -> RightButtonContent
 
     private var isError: Bool {
         errorMessage != nil
     }
 
     init(
-        title: String? = nil,
-        errorMessage: String? = nil,
-        placeholder: String? = nil,
-        size: Dimension.Size,
         text: Binding<String>,
-        @ViewBuilder content: @escaping (Binding<String>) -> Content = { text in
-            DefaultInputViewContent(text: text)
-        },
+        title: String,
+        placeholder: String? = nil,
+        isOptional: Bool = false,
+        isSecure: Bool = false,
+        infoMessage: String? = nil,
+        errorMessage: Binding<String?> = .constant(nil),
         @ViewBuilder errorContent: @escaping (String) -> ErrorContent = { message in
             DefaultInputViewErrorContent(errorMessage: message)
+        },
+        @ViewBuilder rightButtonContent: @escaping () -> RightButtonContent = {
+            EmptyView().padding(.zero)
         }
     ) {
-        self.title = title
-        self.errorMessage = errorMessage
-        self.placeholder = placeholder
-        self.size = size
         self._text = text
-        self.content = content
+        self.title = title
+        self.placeholder = placeholder
+        self.isOptional = isOptional
+        self.isSecure = isSecure
+        self.infoMessage = infoMessage
+        self._errorMessage = errorMessage
         self.errorContent = errorContent
+        self.rightButtonContent = rightButtonContent
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: size.spacing) {
-            if let title {
-                Text(title)
+        VStack(alignment: .leading, spacing: Dimension.xs.spacing) {
+            HStack(spacing: Dimension.xs.spacing) {
+                Text(title.localized)
                     .labelStyle(.m)
                     .foregroundStyle(isError ? Color("content/danger") : Color("content/xx-high"))
+                if isOptional {
+                    Text("optional")
+                        .labelStyle(.s)
+                        .foregroundStyle(Color("content/low"))
+                }
             }
 
-            ZStack(alignment: .leading) {
-                if text.isEmpty, let placeholder {
-                    VStack {
-                        Text(placeholder + "…")
+            HStack(spacing: 0) {
+                ZStack(alignment: .leading) {
+                    if text.isEmpty, let placeholder {
+                        Text(placeholder.localized + "…")
                             .bodyStyle(.m)
                             .foregroundStyle(Color("content/low"))
-                            .offset(CGSize(width: size.spacing, height: size.spacing))
-                        Spacer()
-                    }
-                }
+                            .frame(height: BodyStyle.m.lineHeight)
 
-                content($text)
-                    .padding(size.spacing)
+                    }
+
+                    Group {
+                        if isSecure {
+                            SecureField("", text: $text)
+                        } else {
+                            TextField("", text: $text)
+                        }
+                    }
+                    .bodyStyle(.m)
+                    .foregroundStyle(Color("content/xx-high"))
+                    .padding(.trailing, Dimension.xs.spacing)
+                    .frame(height: BodyStyle.m.lineHeight)
+                    .focused($isFocused)
+                    .accessibilityLabel(placeholder ?? "")
+                }
+                .padding(.leading, Dimension.m.spacing)
+                .padding(.trailing, Dimension.xs.spacing)
+                .padding(.vertical, Dimension.s.spacing)
+
+                rightButtonContent()
+                    .padding(.trailing, Dimension.xs.spacing)
             }
-            .fixedSize(horizontal: false, vertical: true)
             .background(
-                RoundedRectangle(cornerRadius: Dimension.Input.radius)
-                    .stroke(isError ? Color("surface/danger") : Color("surface/x-high"), lineWidth: 1)
+                RoundedRectangle(cornerRadius: Dimension.Radius.input)
+                    .stroke(isError ? Color("surface/danger") :
+                                isFocused ? Color("state/focus") : Color("surface/x-high"),
+                            lineWidth: 1)
             )
-            if let errorMessage {
-                errorContent(errorMessage)
+
+            Group {
+                if let errorMessage {
+                    errorContent(errorMessage.localized)
+                } else if let infoMessage {
+                    Text(infoMessage.localized)
+                        .labelStyle(.s)
+                        .foregroundStyle(Color("content/xx-high"))
+                }
             }
+
         }
-        .padding(.horizontal, size.spacing)
-        .padding(.bottom, size.spacing)
+        .padding(.horizontal, Dimension.s.spacing)
         .background(Color("surface/x-low"))
     }
 }
 
 #Preview {
-    InputView(title: "Title", placeholder: "Placeholder", size: .m, text: .constant(""))
+    InputView(text: .constant(""), title: "Title", placeholder: "Placeholder")
 }

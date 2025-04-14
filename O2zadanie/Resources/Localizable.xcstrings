@@ -1,0 +1,229 @@
+{
+  "sourceLanguage" : "sk",
+  "strings" : {
+    "" : {
+
+    },
+    "accessibilityErrorMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chybová správa: %@"
+          }
+        }
+      }
+    },
+    "accessibilityPasswordProperty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vlastnosť hesla %1$@ je %2$@."
+          }
+        }
+      }
+    },
+    "accessibilityPasswordVisibility" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmena viditeľnosti hesla. Heslo je %@."
+          }
+        }
+      }
+    },
+    "errorIncorrectPassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesprávne heslo"
+          }
+        }
+      }
+    },
+    "errorPasswordValidation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heslo nespĺňa bezpečnostné požiadavky!"
+          }
+        }
+      }
+    },
+    "infoPassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heslo musí spĺňať tieto pravidlá:"
+          }
+        }
+      }
+    },
+    "optional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voliteľné"
+          }
+        }
+      }
+    },
+    "passwordNotVisible" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skryté"
+          }
+        }
+      }
+    },
+    "passWordVisible" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "viditeľné"
+          }
+        }
+      }
+    },
+    "placeholderEmail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadaj emailovú adresu"
+          }
+        }
+      }
+    },
+    "placeholderPassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadaj heslo"
+          }
+        }
+      }
+    },
+    "ruleDescriptionMin1Capital" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspoň jedno veľké písmeno"
+          }
+        }
+      }
+    },
+    "ruleDescriptionMin1Digit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspoň jedna číslica"
+          }
+        }
+      }
+    },
+    "ruleDescriptionMin1SpecialChar" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspoň jeden špeciálny znak (? = # / %)"
+          }
+        }
+      }
+    },
+    "ruleDescriptionMinLength" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimálne 8 znakov"
+          }
+        }
+      }
+    },
+    "ruleMet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "splnená"
+          }
+        }
+      }
+    },
+    "ruleNotMet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nesplnená"
+          }
+        }
+      }
+    },
+    "titleBtnSend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odoslať"
+          }
+        }
+      }
+    },
+    "titleEmail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        }
+      }
+    },
+    "titlePassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heslo"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

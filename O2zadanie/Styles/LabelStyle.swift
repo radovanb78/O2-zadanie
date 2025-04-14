@@ -10,11 +10,13 @@ import SwiftUI
 enum LabelStyle: TextStyle {
     case m
     case s
+    case l
 
     var fontName: String {
         switch self {
         case .m: "Inter-Medium"
         case .s: "Inter-SemiBold"
+        case .l: "Inter-Bold"
         }
     }
 
@@ -22,6 +24,7 @@ enum LabelStyle: TextStyle {
         switch self {
         case .m: 16
         case .s: 14
+        case .l: 20
         }
     }
 
@@ -29,6 +32,7 @@ enum LabelStyle: TextStyle {
         switch self {
         case .m: 22
         case .s: 17
+        case .l: 24
         }
     }
 
@@ -36,6 +40,7 @@ enum LabelStyle: TextStyle {
         switch self {
         case .m: 0.16
         case .s: 0.16
+        case .l: 0.21
         }
     }
 }

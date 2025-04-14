@@ -10,29 +10,20 @@ import Foundation
 
 
 enum Dimension {
-    enum Size {
-        case xs,s,m,l
+    case xxxs, xxs, xs, s, m, l
 
-        var spacing: CGFloat {
-            switch self {
-                case .xs: 8
-                case .s: 12
-                case .m: 16
-                case .l: 12
-            }
-        }
-
-        var listSpacing: CGFloat {
-            switch self {
-                case .xs: 2
-                case .s: 4
-                case .m: 6
-                case .l: 8
-            }
+    var spacing: CGFloat {
+        switch self {
+        case .xxxs: 2
+        case .xxs: 4
+        case .xs: 8
+        case .s: 12
+        case .m: 16
+        case .l: 12
         }
     }
 
-    enum Input {
-        static let radius: CGFloat = 12
+    enum Radius {
+        static let input: CGFloat = 12
     }
 }

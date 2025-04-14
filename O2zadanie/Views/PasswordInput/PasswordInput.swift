@@ -9,102 +9,94 @@ import SwiftUI
 
 /// View for password entry, with the option to specify validation rules
 /// - Parameter password: Binding - the entered password
-/// - Parameter validations: optional - array of validation rules
-/// - Parameter errorMessage: error message
-/// - Parameter validationView: optional - view for displaying the validation rule, must conform to the ValidationViewProtocol
-/// - Parameter changeHandler: function - called when the password changes, returns the validity of the password
-/// - Parameter title: title
-/// - Parameter placeholder: placeholder
-/// - Parameter showValidationHints: determines whether the descriptions of individual validations are displayed
-/// - Parameter size: size
+/// - Parameter isValid - Binding - output value of type boolean - indicates whether the password is valid
+/// - Parameter title: title string
+/// - Parameter placeholder: placeholder string
+/// - Parameter validation: Optional - validation description of type Validation
+/// - Parameter infoMessage: info message string
+/// - Parameter errorMessage: Binding - external error message string, e.g. when error comes from API
+/// - Parameter validationView: Optional - view for displaying the validation rule, must conform to the ValidationViewProtocol
 struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
-    @StateObject private var passwordValidator: PasswordValidator
     @FocusState private var isFocused: Bool
+
+    @StateObject private var passwordValidator: PasswordValidator
     @State private var isSecure = true
 
     @Binding var password: String
+    @Binding private(set) var isValid: Bool
+    @Binding var errorMessage: String?
 
-    let validationView: (Validation, Bool) -> ValidationView
     let title: String
     let placeholder: String
-    let showValidationHints: Bool
-    let size: Dimension.Size
+    let validationView: (PasswordValidator.Validation, Bool) -> ValidationView
+    let infoMessage: String?
 
     init (
-        title: String = "Heslo",
-        placeholder: String = "Zadaj heslo",
         password: Binding<String>,
-        @ViewBuilder validationView: @escaping (Validation, Bool) -> ValidationView = { validation, isError in
+        isValid: Binding<Bool>,
+        title: String = "titlePassword",
+        placeholder: String = "placeholderPassword",
+        validation: Validation? = nil,
+        infoMessage: String? = nil,
+        errorMessage: Binding<String?> = .constant(nil),
+        @ViewBuilder validationView: @escaping (PasswordValidator.Validation, Bool) -> ValidationView = { validation, isError in
             DefaultValidationView(validation: validation, isError: isError)
-        },
-        errorMessage: String? = nil,
-        validations: [ValidationRule] = [],
-        showValidationHints: Bool = true,
-        size: Dimension.Size,
-        changeHandler: ((_ result: Bool) -> Void)? = nil
+        }
     ) {
+        self._password = password
+        self._isValid = isValid
         self.title = title
         self.placeholder = placeholder
-        self._password = password
         self.validationView = validationView
+        self._errorMessage = errorMessage
         self._passwordValidator = StateObject(
             wrappedValue: PasswordValidator(
-                rules: validations,
-                onIsValidChanged: changeHandler,
-                errorMessage: errorMessage
-            )
+                validation: validation)
         )
-        self.showValidationHints = showValidationHints
-        self.size = size
+        self.infoMessage = infoMessage
     }
 
     public var body: some View {
-        InputView(
-            title: title,
-            errorMessage: passwordValidator.errorMessage,
-            placeholder: placeholder,
-            size: size,
-            text: $password,
-            content: { _ in
-                VStack {
-                    HStack {
-                        Group {
-                            if isSecure {
-                                SecureField("", text: $password)
-                            } else {
-                                TextField("", text: $password)
-                                    .autocapitalization(.none)
-                                    .autocorrectionDisabled(true)
-                            }
-                        }
-                        .textContentType(.password)
-                        .bodyStyle(.m)
-                        .foregroundStyle(Color("content/xx-high"))
-                        .accessibilityLabel(placeholder)
-                        .frame(height: BodyStyle.m.lineHeight)
-
-                        Button(action: {
-                            isSecure.toggle()
-                        }) {
-                            Image(systemName: isSecure ? "eye" : "eye.slash")
-                                .bodyStyle(.m)
-                                .foregroundStyle(Color("content/xx-high"))
-                        }
-                        .padding(.leading, size.spacing)
-                        .accessibilityLabel("Zmena viditeľnosti hesla. Heslo je \(isSecure ? "skryté" : "viditeľné")")
-                        .accessibilityAddTraits(.isButton)
+        VStack(spacing: Dimension.s.spacing) {
+            InputView(
+                text: $password,
+                title: title,
+                placeholder: placeholder,
+                isSecure: isSecure,
+                infoMessage: infoMessage,
+                errorMessage: $errorMessage,
+                rightButtonContent: {
+                    Button(action: {
+                        isSecure.toggle()
+                    }) {
+                        Image(systemName: isSecure ? "eye" : "eye.slash")
+                            .bodyStyle(.m)
+                            .foregroundStyle(Color("content/xx-high"))
                     }
-                    if showValidationHints {
-                        VStack(spacing: 4) {
-                            ForEach(passwordValidator.validations) { validation in
-                                validationView(validation, passwordValidator.isError )
-                            }
-                        }
-                        .padding(.top, size.spacing)
+                    .frame(minWidth: 32, minHeight: 32)
+                    .accessibilityLabel("accessibilityPasswordVisibility".localized(
+                        isSecure ? "passwordNotVisible".localized : "passwordVisible".localized
+                    ))
+                    .accessibilityAddTraits(.isButton)
+                }
+            )
+            .autocapitalization(.none)
+            .autocorrectionDisabled(true)
+            .textContentType(.password)
+            .focused($isFocused)
+
+            if passwordValidator.showValidationHints {
+                VStack(alignment: .leading, spacing: Dimension.xxs.spacing) {
+                    ForEach(passwordValidator.validations) { validation in
+                        validationView(validation, passwordValidator.isError )
                     }
                 }
-            })
+                .padding(.horizontal, Dimension.s.spacing)
+            }
+        }
+        .background(Color("surface/x-low"))
         .onChange(of: password) { password in
+            errorMessage = nil
             passwordValidator.validatePassword(password, onChange: true)
         }
         .onSubmit {
@@ -112,12 +104,19 @@ struct PasswordInput<ValidationView: ValidationViewProtocol>: View {
         }
         .focused($isFocused)
         .onChange(of: isFocused) { isFocused in
+            if isFocused { errorMessage = nil }
             passwordValidator.validatePassword(password, onChange: isFocused)
+        }
+        .onChange(of: passwordValidator.isValid) { isValid in
+            self.isValid = isValid
+        }
+        .onChange(of: passwordValidator.errorMessage) { errorMessage in
+            self.errorMessage = errorMessage
         }
     }
 }
 
 #Preview {
-    PasswordInput(password: .constant(""), size: .m)
+    PasswordInput(password: .constant(""), isValid: .constant(false))
 }
 

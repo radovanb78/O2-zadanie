@@ -40,6 +40,13 @@ enum BodyStyle: TextStyle {
         case .m: 0.01
         }
     }
+
+    var listSpacing: CGFloat {
+        switch self {
+        case .m: 6
+        }
+    }
+    
 }
 
 extension View {
