@@ -46,7 +46,6 @@ enum BodyStyle: TextStyle {
         case .m: 6
         }
     }
-    
 }
 
 extension View {

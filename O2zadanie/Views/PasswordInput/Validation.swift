@@ -121,6 +121,5 @@ class PasswordValidator: ObservableObject {
         }
         self.validations = validations
         isPasswordValid = satisfiedRulesCount >= numOfSatisfiedRulesForSuccess
-
     }
 }

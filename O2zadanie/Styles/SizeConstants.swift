@@ -7,8 +7,6 @@
 
 import Foundation
 
-
-
 enum Dimension {
     case xxxs, xxs, xs, s, m, l
 
